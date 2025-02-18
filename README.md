@@ -7,6 +7,7 @@ sequenceDiagram
     participant GraphAPI as AXPGraphAPI
     participant Graph as Microsoft Graph API
     participant DB as SysAADClientTable
+    participant Contract as AXPSPServicePrincipalContract
     participant Config as AXPSPParameters
     participant Email as SysMailerMessageBuilder
 
@@ -32,6 +33,9 @@ sequenceDiagram
         %% Berechnung der verbleibenden Tage
         Controller->>DB: Berechne RemainingDays = EndDateTime - Heute
         Controller->>Config: Hole Warnschwellenwerte (RemainingDaysRed, RemainingDaysYellow)
+
+        %% Speicherung der Werte in den Contract
+        Service->>Contract: Speichere ClientId, EndDateTime, RemainingDays
 
         %% Prüfung, ob eine Benachrichtigung notwendig ist
         alt RemainingDays <= RemainingDaysRed
