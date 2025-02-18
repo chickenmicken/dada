@@ -4,7 +4,7 @@ sequenceDiagram
     participant Controller as AXPSPServicePrincipalController
     participant Service as AXPSPServicePrincipalService
     participant API as AXPSPGraphAPI_GetEndDate
-    participant Auth as getAuthToken
+    participant GraphAPI as AXPGraphAPI
     participant Graph as Microsoft Graph API
     participant DB as SysAADClientTable
     participant Config as AXPSPParameters
@@ -19,8 +19,8 @@ sequenceDiagram
         alt EndDateTime nicht gesetzt
             Controller->>Service: Fordere EndDateTime über API an (ClientId)
             Service->>API: Anfrage für EndDateTime mit ClientId
-            API->>Auth: Fordere Auth-Token für API-Anfrage
-            Auth-->>API: Liefert Bearer Token zurück
+            API->>GraphAPI: Rufe getAuthToken() für Authentifizierung
+            GraphAPI-->>API: Bearer Token zurückgegeben
             API->>Graph: HTTP GET Request mit Token & ClientId
             Graph-->>API: JSON-Antwort mit EndDateTime
             API-->>Service: Extrahiere EndDateTime
