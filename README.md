@@ -25,24 +25,26 @@ sequenceDiagram
             API->>Graph: HTTP GET Request mit Token & ClientId
             Graph-->>API: JSON-Antwort mit EndDateTime
             API-->>Service: Extrahiere EndDateTime
+            Service->>Contract: Erstelle Contract mit ClientId & EndDateTime
+            Contract-->>Service: Contract mit Daten zurückgegeben
             Service->>DB: Speichere EndDateTime in SysAADClientTable
         else EndDateTime bereits gesetzt
             Controller-->>Controller: Keine API-Abfrage nötig
+            DB->>Contract: Lade vorhandene Werte in Contract
         end
 
         %% Berechnung der verbleibenden Tage
         Controller->>DB: Berechne RemainingDays = EndDateTime - Heute
         Controller->>Config: Hole Warnschwellenwerte (RemainingDaysRed, RemainingDaysYellow)
-
-        %% Speicherung der Werte in den Contract
-        Service->>Contract: Speichere ClientId, EndDateTime, RemainingDays
+        DB->>Contract: Aktualisiere Contract mit RemainingDays
 
         %% Prüfung, ob eine Benachrichtigung notwendig ist
         alt RemainingDays <= RemainingDaysRed
             Controller->>Service: Lösen E-Mail-Benachrichtigung aus
             Service->>Email: Erstelle E-Mail für ClientId
             Email->>Config: Hole E-Mail-Vorlage & Empfänger aus AXPSPParameters
-            Email->>Email: Setze Platzhalter (ClientId, EndDateTime, RemainingDays)
+            Contract->>Email: Übergibt ClientId, EndDateTime, RemainingDays
+            Email->>Email: Setze Platzhalter in E-Mail
             Email->>Email: Sende E-Mail an Empfänger
         else RemainingDays <= RemainingDaysYellow
             Controller-->>Controller: Nur visuelle Warnung, keine E-Mail
